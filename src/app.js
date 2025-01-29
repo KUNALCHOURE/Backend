@@ -19,16 +19,12 @@ app.use(express.static("public"))
 
 
 //routes
-import router from "./routes/user.routes.js";
-
+import userrouter from "./routes/user.routes.js";
 
 //routes decalaration
-app.use("/api/v1/users",router);
+app.use("/api/v1/users",userrouter);
 
-app.get("/",(req,res)=>{
-  console.log("h");
-  res.send("hellpo");
-});
+
 export default app;
 
 

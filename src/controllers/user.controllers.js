@@ -76,4 +76,18 @@ console.log(avatarupload);
     )
 })
 
-export {registerUser};
+const loginuser=asynchandler(async(req,res,)=>{
+   let{username,password}=req.body;
+
+   let result=await user.findOne({username});
+
+   let ispasscorect= await user.ispasswordcorrect(result.password);
+   
+   if(!ispasscorect){
+     throw Apierror(400,"Username is not correct");
+   }
+   
+   return Apiresponse(200,"User loged in succesfully ");
+})
+
+export {registerUser,loginuser};
