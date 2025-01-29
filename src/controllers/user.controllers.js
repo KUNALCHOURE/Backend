@@ -61,10 +61,11 @@ console.log(avatarupload);
    })
 
    // to check if the user is created or not 
-   const createduser=await user.findById(user._id).select( // using select function we can choose which function we wil not select 
+   const createduser=await user.findById(usersave._id).select( // using select function we can choose which function we wil not select 
       "-password -refereshtoken"                         // we have to write them with the - sign and add space between 2 new fields 
                                                          // through this the password and the referechtoken will not be included in the object
    )
+   console.log(createduser);
 
     if(!createduser){
       throw new Apierror(500,"there is a problem while registering the user ")

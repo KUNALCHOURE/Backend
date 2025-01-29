@@ -43,7 +43,7 @@ const userschema=new mongoose.Schema({
     },
     refereshtoken:{
         type:String,
-    required:true
+   
     },
 
 },{timestamps:true})
