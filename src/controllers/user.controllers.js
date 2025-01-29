@@ -2,7 +2,7 @@ import asynchandler from '../utils/asynchandler.js';
 import Apierror from "../utils/Apierror.js";
 import user from "../models/users.models.js";
 import {uploadcloudinary} from"../utils/cloudinary.js";
-import Apiresponse from '../utils/Apiresponse.js';
+import Apiresponse from '../utils/apiresponse.js';
 const registerUser=asynchandler(async(req,res)=>{
    //get the user details 
    // validation -not empty
@@ -33,15 +33,16 @@ const registerUser=asynchandler(async(req,res)=>{
     }
 
     // mmulter provide acces of the files using multers 
-   const avatarlocalpath= req.files?.avatar[0]?.path;
-   const coverimagelocalpath= req.files?.coverimage[0]?.path;
-   console.log(avatarlocalpath)
+    const avatarlocalpath = req.files?.avatar?.[0]?.path;
+    const coverimagelocalpath = req.files?.coverimage?.[0]?.path || "";
 
-   if(!avatarlocalpath){
-      throw new Apierror(400 ,"Avatar image is required");
-   }
+    if (!avatarlocalpath) {
+        throw new Apierror(400, "Avatar image is required");
+    }
+
    const avatarupload=await uploadcloudinary(avatarlocalpath)
    const coverupload=await uploadcloudinary(coverimagelocalpath);
+
 console.log(avatarupload);
 
    if(!avatarupload){
