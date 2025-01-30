@@ -3,6 +3,26 @@ import Apierror from "../utils/Apierror.js";
 import user from "../models/users.models.js";
 import {uploadcloudinary} from"../utils/cloudinary.js";
 import Apiresponse from '../utils/apiresponse.js';
+
+const generateAccessandrefershtoken=async(userID)=>{
+   try {
+   let userinfo=await user.findById((userID));
+      
+  const accesstoken= userinfo.generateAcessToken();
+  const refershtoken=userinfo.generateRefreshToken();
+
+  userinfo.refershtoken=refershtoken;
+ await userinfo.save({validateBeforeSave:false});  // if we save in the db the validationd will run 
+                                               // and we dont want that so we will use valuidateBeforeSave:false   
+  return{accesstoken,refershtoken};
+    
+   } catch (error) {
+       throw new Apierror(500,"something went wrong wile creating access and referesh token ")
+   }
+}
+
+
+
 const registerUser=asynchandler(async(req,res)=>{
    //get the user details 
    // validation -not empty
@@ -77,16 +97,39 @@ console.log(avatarupload);
 })
 
 const loginuser=asynchandler(async(req,res,)=>{
-   let{username,password}=req.body;
+  //re body->  data
+  // username or email
+  // find the user 
+  // password check 
+  //access and referesh token 
 
-   let result=await user.findOne({username});
+   let{email,username,password}=req.body;
+   
+  if(!username ||!email){
+     throw new Apierror(400,"username or password is required");
+  }
 
-   let ispasscorect= await user.ispasswordcorrect(result.password);
+   let result=await user.findOne({
+    $or:[{username},{email}]  // this will help us to find  user based on email or username 
+  });
+
+   if(!result){
+    return Apierror(400,"THERE IS A PROBLEM WHILE LOGING IN user does not exist  ")
+   }
+ // here we want to use the ispassswordcorrect method that is created by us so  it will be available 
+ // in this instance of user that we had find so we have to use the result here 
+ //user will be used when we are using the  predefined mongo db methods 
+   let ispasscorect= await result.ispasswordcorrect(password);
    
    if(!ispasscorect){
      throw Apierror(400,"Username is not correct");
    }
    
+   // if the user is already register and will succesfully login then we will create the access and referesh token 
+   // so lets create the methods 
+
+  const{accesstoken,refershtoken}=await generateAccessandrefershtoken(user._id);
+  
    return Apiresponse(200,"User loged in succesfully ");
 })
 
