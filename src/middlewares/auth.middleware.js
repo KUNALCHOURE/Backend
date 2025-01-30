@@ -23,7 +23,8 @@ export const verifyJWT=asynchandler((req,_,next)=>{  //here res is not used so w
     throw new Apierror(401,invalid Access token )
   }
 
-  //adding new object in req
+  //adding new object in req so that we are able to acces the tokens in the logout function so that we can 
+// easily find the user and logout the function 
   req.user=user;
   next();  //because it is the middleware
 }

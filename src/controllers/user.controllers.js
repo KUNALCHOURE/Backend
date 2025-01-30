@@ -157,7 +157,7 @@ const loginuser=asynchandler(async(req,res,)=>{
 })
 
 const logoutuser=asynchandler(async(req,res)=>{
-  //  
+    
  let userid= req.user._id
 await user.findByIdAndUpdate(userid,{
   $set:{
@@ -170,8 +170,8 @@ await user.findByIdAndUpdate(userid,{
 )
 
 const options={   //the cookies can generaly be modied from the frontend so for security 
-  // we add this httpOnly nad secure as true ,so it doesnt allow modifying cookies from the frontend 
-  // and the cookies can be only modified from the server 
+                  // we add this httpOnly nad secure as true ,so it doesnt allow modifying cookies from the frontend 
+                  // and the cookies can be only modified from the server 
 httpOnly:true,
 secure:true
 }
@@ -180,7 +180,8 @@ return res
 .status(200)   // using clearcookie the cookies will be cleared 
 .clearCookie("accessToken",options)
 .clearCookie("refershToken",options)
-.json(new Apiresponse(200,{},"userlogged out"))
+.json(new Apiresponse(200,{},"userlogged out"));
+
 
 })
 
