@@ -129,8 +129,33 @@ const loginuser=asynchandler(async(req,res,)=>{
    // so lets create the methods 
 
   const{accesstoken,refershtoken}=await generateAccessandrefershtoken(user._id);
+
+  const loggedinuser=await user.findById(userinfo._id).select("-password -refereshtoken");
+
   
-   return Apiresponse(200,"User loged in succesfully ");
+  //cookies 
+  const options={   //the cookies can generaly be modied from the frontend so for security 
+                  // we add this httpOnly nad secure as true ,so it doesnt allow modifying cookies from the frontend 
+                  // and the cookies can be only modified from the server 
+    httpOnly:true,
+    secure:true
+  }
+
+  return res
+  .status(200)
+  .cookie("accessToken",accesstoken,options)
+  .cookie("refreshToken",refershtoken,options)
+  .json(
+    new Apiresponse(200,{
+      user:loggedinuser,accesstoken,
+      refershtoken
+    },
+  "user logged in succesfully"
+)
+  )
+  
 })
+
+
 
 export {registerUser,loginuser};
