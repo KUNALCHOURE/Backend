@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {verifyJWT}from "../middlewares/auth.middleware.js"
-import {loginuser, registerUser,logoutuser} from '../controllers/user.controllers.js';
+import {loginuser, registerUser,logoutuser,refreshaccesstoken} from '../controllers/user.controllers.js';
 import {upload} from "../middlewares/multer.middleware.js"
 
 const router=Router();  // it is like app of express
@@ -23,6 +23,8 @@ router.route("/login").post(loginuser)
 
 //secured routes 
 //using verifyjwt as middleware 
-router.route("/logout").post(verifyJWT,logoutuser)
+router.route("/logout").post(verifyJWT,logoutuser);
+
+router.route("/refresh-token").post(refreshaccesstoken)
 
 export default router;

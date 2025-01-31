@@ -3,7 +3,7 @@ import Apierror from "../utils/Apierror.js";
 import user from "../models/users.models.js";
 import {uploadcloudinary} from"../utils/cloudinary.js";
 import Apiresponse from '../utils/apiresponse.js';
-
+import jwt from "jsonwebtoken";
 const generateAccessandrefershtoken=async(userID)=>{
    try {
    let userinfo=await user.findById((userID));
@@ -113,10 +113,10 @@ const loginuser=asynchandler(async(req,res,)=>{
      throw new Apierror(400,"username or password is required");
   }
 
-   let result=await user.findOne({
-    $or:[{username},{email}]  // this will help us to find  user based on email or username 
+  let result = await user.findOne({
+    $or: [{ username: username }, { email: email }] // this will help us find a user based on email or username
   });
-
+  
    if(!result){
     throw new Apierror(400,"THERE IS A PROBLEM WHILE LOGING IN user does not exist  ")
 
@@ -195,4 +195,49 @@ return res
 
 })
 
-export {registerUser,loginuser,logoutuser};
+
+const refreshaccesstoken=asynchandler(async(req,res)=>{ //req.body is used for the user accesing from mobile 
+
+  try{
+    const incomminrefreshtoken=req.cookie.refreshtoken|| req.body.refreshToken   ;
+    if(!incomminrefreshtoken){
+      throw new Apierror(400,"Unauthorised access");
+    }
+    const decodedtoken =await jwt.verify(incomminrefreshtoken,process.env.REFRESH_TOKEN_SECRET);
+   
+     const foundedduser=await user.findById(decodedtoken?._id);
+     if(!foundedduser){
+      throw new Apierror(400,"invalid refreshtoken ");
+    }
+
+    if(incomminrefreshtoken!== foundedduser.refreshtoken) {
+      throw new Apierror(401,"Invalid refresh token");
+    }
+
+// once the verification is done then we will again generate access and refreshtoken 
+   
+  const options={
+    httpOnly:true,
+    secure:true
+  }
+
+  const {accesstoken,refreshtoken}=await generateAccessandrefershtoken(foundedduser._id);
+
+  return res
+  .status(200)
+  .cookie("accessToken",accesstoken,options)
+  .cookie("refreshToken",refreshtoken,options)
+  .json(
+    new Apiresponse(200,{
+      accesstoken,refereshtoken
+    },
+  " Acess token refreshed succesfully "
+)
+  )
+}
+catch(err){
+  throw new Apierror(400,err.message || "there is a problem while refreshing token ")
+}
+
+})
+export {registerUser,loginuser,logoutuser,refreshaccesstoken};
