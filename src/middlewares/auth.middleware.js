@@ -1,11 +1,11 @@
 import Apierror from '../utils/Apierror'
-import Apiresponse from '../utils/Apiresponse'
+import Apiresponse from '../utils/apiresponse'
 import asynchandler from '../utils/asynchandler.js'
 import jwt from 'jsonwebtoken';
 import user from '../models/user.models.js';
 
 
-export const verifyJWT=asynchandler((req,_,next)=>{  //here res is not used so we can write _ in that place 
+export const verifyJWT=asynchandler(async(req,_,next)=>{  //here res is not used so we can write _ in that place 
   try{
     const token= req.cookie?.accessToken|| req.header("Authorization")?.replace("Bearer","");
 
@@ -20,7 +20,7 @@ export const verifyJWT=asynchandler((req,_,next)=>{  //here res is not used so w
 
 
   if(!user){
-    throw new Apierror(401,invalid Access token )
+    throw new Apierror(401,"invalid Access token" )
   }
 
   //adding new object in req so that we are able to acces the tokens in the logout function so that we can 
