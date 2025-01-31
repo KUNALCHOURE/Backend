@@ -1,7 +1,8 @@
 import { Router } from "express";
-import verifyJWT from "../middleware/auth.middleware.js"
+import {verifyJWT}from "../middlewares/auth.middleware.js"
 import {loginuser, registerUser,logoutuser} from '../controllers/user.controllers.js';
 import {upload} from "../middlewares/multer.middleware.js"
+
 const router=Router();  // it is like app of express
 
 router.route("/register").post(

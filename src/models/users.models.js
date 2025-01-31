@@ -41,7 +41,7 @@ const userschema=new mongoose.Schema({
         type:String, 
     required:[true,"passwrod is required"]
     },
-    refereshtoken:{
+    refreshtoken:{
         type:String,
    
     },
@@ -65,7 +65,7 @@ userschema.methods.ispasswordcorrect=async function(password){
 userschema.methods.generateAcessToken=async function(){
    return jwt.sign(
     { //PAYLOD -INFO GIVEN
-        _id:_id,
+        _id:this._id,
         email:this.email,
         username:this.username,
         fullname:this.fullname,
@@ -83,13 +83,13 @@ userschema.methods.generateAcessToken=async function(){
 userschema.methods.generateRefreshToken=async function(){
     return jwt.sign(
         {
-            _id:_id,
+            _id:this._id,
            
     
         },
-        process.env.REFERSH_TOKEN_SECRET,
+        process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn:process.env.REFERESH_TOKEN_EXPIRY
+            expiresIn:process.env.REFRESH_TOKEN_EXPIRY
     
         },
     

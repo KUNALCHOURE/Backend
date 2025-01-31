@@ -7,14 +7,18 @@ import Apiresponse from '../utils/apiresponse.js';
 const generateAccessandrefershtoken=async(userID)=>{
    try {
    let userinfo=await user.findById((userID));
-      
-  const accesstoken= userinfo.generateAcessToken();
-  const refershtoken=userinfo.generateRefreshToken();
+  
+//please write await in front of  therse function this error took 1.5 hr to debug
+  const accesstoken= await userinfo.generateAcessToken();
+  const refreshtoken=await userinfo.generateRefreshToken();
+ 
 
-  userinfo.refershtoken=refershtoken;
+  userinfo.refreshtoken=refreshtoken;
  await userinfo.save({validateBeforeSave:false});  // if we save in the db the validationd will run 
-                                               // and we dont want that so we will use valuidateBeforeSave:false   
-  return{accesstoken,refershtoken};
+                                            // and we dont want that so we will use valuidateBeforeSave:false  
+               console.log(accesstoken);
+               console.log(refreshtoken);                              
+  return{accesstoken,refreshtoken};
     
    } catch (error) {
        throw new Apierror(500,"something went wrong wile creating access and referesh token ")
@@ -114,8 +118,9 @@ const loginuser=asynchandler(async(req,res,)=>{
   });
 
    if(!result){
-    return Apierror(400,"THERE IS A PROBLEM WHILE LOGING IN user does not exist  ")
-   }
+    throw new Apierror(400,"THERE IS A PROBLEM WHILE LOGING IN user does not exist  ")
+
+  }
  // here we want to use the ispassswordcorrect method that is created by us so  it will be available 
  // in this instance of user that we had find so we have to use the result here 
  //user will be used when we are using the  predefined mongo db methods 
@@ -128,27 +133,32 @@ const loginuser=asynchandler(async(req,res,)=>{
    // if the user is already register and will succesfully login then we will create the access and referesh token 
    // so lets create the methods 
 
-  const{accesstoken,refershtoken}=await generateAccessandrefershtoken(user._id);
+  const{accesstoken,refreshtoken}=await generateAccessandrefershtoken(result._id);
 
-  const loggedinuser=await user.findById(userinfo._id).select("-password -refereshtoken");
+  console.log(accesstoken);
+  console.log(refreshtoken);
+  const loggedinuser=await user.findById(result._id).select("-password -refreshtoken");
 
   
   //cookies 
   const options={   //the cookies can generaly be modied from the frontend so for security 
                   // we add this httpOnly nad secure as true ,so it doesnt allow modifying cookies from the frontend 
                   // and the cookies can be only modified from the server 
-    httpOnly:true,
-    secure:true
+                
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    path: '/'  // Explicitly setting the path
+                  
   }
 
   return res
   .status(200)
   .cookie("accessToken",accesstoken,options)
-  .cookie("refreshToken",refershtoken,options)
+  .cookie("refreshToken",refreshtoken,options)
   .json(
     new Apiresponse(200,{
       user:loggedinuser,accesstoken,
-      refershtoken
+      refreshtoken
     },
   "user logged in succesfully"
 )
@@ -161,7 +171,7 @@ const logoutuser=asynchandler(async(req,res)=>{
  let userid= req.user._id
 await user.findByIdAndUpdate(userid,{
   $set:{
-    refereshtoken:undefind,
+    refreshtoken:undefined,
   }
 },
 {
@@ -179,7 +189,7 @@ secure:true
 return res
 .status(200)   // using clearcookie the cookies will be cleared 
 .clearCookie("accessToken",options)
-.clearCookie("refershToken",options)
+.clearCookie("refreshToken",options)
 .json(new Apiresponse(200,{},"userlogged out"));
 
 
