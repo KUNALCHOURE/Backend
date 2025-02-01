@@ -374,6 +374,88 @@ const updatecoverimage=asynchandler(async(req,res)=>{
 
 })
 
+const getuserchannelprofile=asynchandler(async(req,res)=>{
+   // we will get the username from the params or the url like channel/kunal
+
+  const{username}=req.params;
+
+   if(!username?.trim()){
+    throw new Apierror(400,"the username is missing ");
+
+   }
+   // final value comes as an array after pipelining 
+   //creating pipelines for doing operations 
+  const channel= await user.aggregate([
+    {
+      $match:{
+        username:username?.toLowerCase();
+      }
+    },
+
+    {
+      //for finding subscriber
+      $lookup:{
+        from:"subscription",
+        localFeild:"_id";
+        foreignFeild:"channel",
+        as:"Subscribers"
+      }
+    },
+    {
+      // for finding channels 
+      $lookup:{
+        from:"subscription",
+        localFeild:"_id";
+        foreignFeild:"subscriber",
+        as:"Subscribeto"
+      }
+    },
+    {
+      //here we are adding new feilds 
+      $addFeilds:{
+        subscriberscount:{
+          $size:"$Subscribers"
+        },
+        channelsSubscribetocount:{
+          $size:"$Subscribeto"
+        },
+
+
+        isSubscribed:{
+          $condition:{
+            if:{$in:[req.user?._id,$Subscribers.subscriber]},
+            then:true
+            else:false
+          }
+        }
+      }
+    },
+ //
+  {
+    $project:{
+      fullname:1,
+      username:1,
+      subscriberscount:1,
+      channelsSubscribetocount:1,
+       avatar:1,
+       coverimage:1,
+       email:1
+    }
+  }
+
+  ])
+
+  if(!channel?.length){
+    throw new Apierror(400, "channels does not exits");
+  }
+  
+  return res.status(200)
+  .json(
+    new Apiresponse(200,channel[0],"user channel fetched successfully ")
+  )
+})
+
+
 export {registerUser
   ,loginuser,
   logoutuser
