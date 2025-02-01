@@ -308,12 +308,80 @@ const updateaccout=asynchandler(async(req,res)=>{
 
   }
 return res.status(200)
-.json(new apiresponse(200,{},"account updated successfully "));
+.json(new Apiresponse(200,{},"account updated successfully "));
 }
 );
 
 
-con
+const updateavatar=asynchandler(async(req,res)=>{
+// we are using only files in and in the files only the avatar image path will come so we have to just write 
+ // req.files?.url
+  let avatarnewpath=req.files?.path;
+
+  if(avatarnewpath){
+    throw new Apierror(400,"Avatar file is missing");
+
+  }
+  let res=await uploadcloudinary(avatarnewpath);
+
+  if(!res.url){
+    throw new Apierror(400,"Problem occured while saving in cloudinary ")
+  }
+
+  const result =await userfind.findByIdAndUpdate(req.user?._id,{
+    $set:{
+      avatar:res.url
+    }
+  }{new:true}).select("-password");
+
+  return res.status(200)
+  .json(new Apiresponse(200,{result}
+    ,
+    "Avatar image updated"
+  ))
 
 
-export {registerUser,loginuser,logoutuser,refreshaccesstoken,changecurrectuserpassword,getcurrectuser,updateaccout};
+})
+
+
+const updatecoverimage=asynchandler(async(req,res)=>{
+// we are using only files in and in the files only the cover image path will come so we have to just write 
+ // req.files?.url
+  let covernewpath=req.files?.path;
+
+  if(covernewpath){
+    throw new Apierror(400,"Avatar file is missing");
+
+  }
+  let res=await uploadcloudinary(covernewpath);
+
+  if(!res.url){
+    throw new Apierror(400,"Problem occured while saving in cloudinary ")
+  }
+
+  const response=await userfind.findByIdAndUpdate(req.user?._id,{
+    $set:{
+      coverimage:res.url
+    }
+  }{new:true}).select("-password");
+
+
+  return res.status(200)
+  .json(new Apiresponse(200,{response}
+    ,
+    "Cover image updated"
+  ))
+
+})
+
+export {registerUser
+  ,loginuser,
+  logoutuser
+  ,refreshaccesstoken
+  ,changecurrectuserpassword
+  ,getcurrectuser,
+  updateaccout,
+  updateavatar,
+  updatecoverimage
+
+};
