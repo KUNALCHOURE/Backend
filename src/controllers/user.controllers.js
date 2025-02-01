@@ -320,20 +320,21 @@ return res.status(200)
 
 const updateavatar=asynchandler(async(req,res)=>{
 // we are using only files in and in the files only the avatar image path will come so we have to just write 
- // req.files?.url
-  let avatarnewpath=req.files?.path;
+ // req.file?.url
 
-  if(avatarnewpath){
+  let avatarnewpath=req.file?.path;
+
+  if(!avatarnewpath){   // condition sahi lagana ek condition(!) nahi lagane se error aa raha tha 
     throw new Apierror(400,"Avatar file is missing");
 
   }
   let imageupload=await uploadcloudinary(avatarnewpath);
-
+console.log(imageupload);
   if(!imageupload.url){
     throw new Apierror(400,"Problem occured while saving in cloudinary ")
   }
 
-  const result =await userfind.findByIdAndUpdate(req.user?._id,{
+  const result =await user.findByIdAndUpdate(req.user?._id,{
     $set:{
       avatar:imageupload.url
     }
@@ -351,11 +352,11 @@ const updateavatar=asynchandler(async(req,res)=>{
 
 const updatecoverimage=asynchandler(async(req,res)=>{
 // we are using only files in and in the files only the cover image path will come so we have to just write 
- // req.files?.url
-  let covernewpath=req.files?.path;
+ // req.file?.url
+  let covernewpath=req.file?.path;
 
-  if(covernewpath){
-    throw new Apierror(400,"Avatar file is missing");
+  if(!covernewpath){
+    throw new Apierror(400,"coverimage file is missing");
 
   }
   let coverupload=await uploadcloudinary(covernewpath);
@@ -364,7 +365,7 @@ const updatecoverimage=asynchandler(async(req,res)=>{
     throw new Apierror(400,"Problem occured while saving in cloudinary ")
   }
 
-  const response=await userfind.findByIdAndUpdate(req.user?._id,{
+  const response=await user.findByIdAndUpdate(req.user?._id,{
     $set:{
       coverimage:coverupload.url
     }
