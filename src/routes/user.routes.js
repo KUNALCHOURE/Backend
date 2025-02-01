@@ -41,7 +41,7 @@ router.route("/change-pasword").post(verifyJWT,changecurrectuserpassword);
 router.route("/current-user").get(verifyJWT,getcurrectuser);
 
 //we are using patch because we want that the particular value changes 
-router.route("update-profile").patch(verifyJWT,updateaccout);
+router.route("/update-profile").patch(verifyJWT,updateaccout);
 router.route("/update-avatar").patch(verifyJWT,upload.single("avatar"),updateavatar);
 router.route("/update-coverimage").patch(verifyJWT,upload.single("coverimage"),updatecoverimage);
 

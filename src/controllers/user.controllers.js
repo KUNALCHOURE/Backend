@@ -203,7 +203,7 @@ const refreshaccesstoken=asynchandler(async(req,res)=>{ //req.body is used for t
     if(!incomminrefreshtoken){
       throw new Apierror(400,"Unauthorised access");
     }
-    const decodedtoken =await jwt.verify(incomminrefreshtoken,process.env.REFRESH_TOKEN_SECRET);
+    const decodedtoken =jwt.verify(incomminrefreshtoken,process.env.REFRESH_TOKEN_SECRET);
    
      const foundedduser=await user.findById(decodedtoken?._id);
      if(!foundedduser){
@@ -249,14 +249,15 @@ const changecurrectuserpassword=(asynchandler(async(req,res)=>{
 
    const ispasscorrect=await userfind.ispasswordcorrect(oldpassword);
     
-    if(!ispasscorect){
+    if(!ispasscorrect){
       throw new Apierror(400,"The oldpassword is not coorect please enter the correct password ")
     }
 //saving the new password in the database 
-     await userfind.password==newpassword;
+     userfind.password=newpassword;   // isme await mat lagana 
      // we dont want other validations to run so we are writting validatebeforesave:false;
-
+    console.log(userfind.password)
       await userfind.save({validateBeforeSave:false});
+      
 
   return res
   .status(200)
@@ -271,7 +272,8 @@ const changecurrectuserpassword=(asynchandler(async(req,res)=>{
 
 const getcurrectuser=asynchandler(async(req,res)=>{
 let userobject=req.user;
-
+    // select method dont work on js object 
+                                        // they only work on mongoose query
   return res.status(200)
   .json(
     new Apiresponse(200,
@@ -293,20 +295,23 @@ const updateaccout=asynchandler(async(req,res)=>{
     throw new Apierror(400,"Values are empty");
 
   }
-
- const userfind=user.findByIdAndUpdate(req.user?._id,{
+ console.log(fullname);
+ const userfind=await user.findByIdAndUpdate(req.user?._id,{
   $set:{
     username:username,
     fullname:fullname,
     email:email,
-  }
- },{new:true}
-).select("-password"); // new:true se ye hota hai ki updatehone ke bad jo inormation hai woh hame miljati hai
+  },
+ },{new:true,select:"-password"}
+); // new:true se ye hota hai ki updatehone ke bad jo inormation hai woh hame miljati hai
 
+console.log(userfind);
   if(!userfind){
     throw new Apierror(400,"Unauthorizzed access");
 
   }
+  req.user=userfind;
+  
 return res.status(200)
 .json(new Apiresponse(200,{},"account updated successfully "));
 }
@@ -322,15 +327,15 @@ const updateavatar=asynchandler(async(req,res)=>{
     throw new Apierror(400,"Avatar file is missing");
 
   }
-  let res=await uploadcloudinary(avatarnewpath);
+  let imageupload=await uploadcloudinary(avatarnewpath);
 
-  if(!res.url){
+  if(!imageupload.url){
     throw new Apierror(400,"Problem occured while saving in cloudinary ")
   }
 
   const result =await userfind.findByIdAndUpdate(req.user?._id,{
     $set:{
-      avatar:res.url
+      avatar:imageupload.url
     }
   },{new:true}).select("-password");
 
@@ -353,15 +358,15 @@ const updatecoverimage=asynchandler(async(req,res)=>{
     throw new Apierror(400,"Avatar file is missing");
 
   }
-  let res=await uploadcloudinary(covernewpath);
+  let coverupload=await uploadcloudinary(covernewpath);
 
-  if(!res.url){
+  if(!coverupload.url){
     throw new Apierror(400,"Problem occured while saving in cloudinary ")
   }
 
   const response=await userfind.findByIdAndUpdate(req.user?._id,{
     $set:{
-      coverimage:res.url
+      coverimage:coverupload.url
     }
   },{new:true}).select("-password");
 
