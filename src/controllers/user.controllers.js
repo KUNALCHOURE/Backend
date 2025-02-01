@@ -240,4 +240,80 @@ catch(err){
 }
 
 })
-export {registerUser,loginuser,logoutuser,refreshaccesstoken};
+
+
+const changecurrectuserpassword=(asynchandler(async(req,res)=>{
+   const {oldpassword,newpassword}=req.body;
+ 
+   const userfind=await user.findById(req.user?._id);
+
+   const ispasscorrect=await userfind.ispasswordcorrect(oldpassword);
+    
+    if(!ispasscorect){
+      throw new Apierror(400,"The oldpassword is not coorect please enter the correct password ")
+    }
+//saving the new password in the database 
+     await userfind.password=newpassword;
+     // we dont want other validations to run so we are writting validatebeforesave:false;
+
+      await userfind.save({validateBeforeSave:false});
+
+  return res
+  .status(200)
+  .json(
+    new apiresponse(200,{}
+      ,"Password changes successfully"
+    )
+  )
+
+}))
+
+
+cosnt getcurrectuser=asynchandler(async(req,res)=>{
+
+
+  return res.status(200,
+    {
+      req.user
+    }
+    ,"The user is succesfully found "
+
+  )
+
+   
+})
+
+
+//when you are updating files so make different controllers for them because  text data will save many time so it is not a good practice  
+const updateaccout=asynchandler(async(req,res)=>{
+  
+  let{username,fullname,email}=req.body;
+
+  if(!username || !fullname || !email){
+    throw new Apierror(400,"Values are empty");
+
+  }
+
+ const userfind=user.findByIdAndUpdate(req.user?._id,{
+  $set:{
+    username:username
+    fullname:fullname,
+    email:email,
+  }
+ },{new:true}
+).select("-password"); // new:true se ye hota hai ki updatehone ke bad jo inormation hai woh hame miljati hai
+
+  if(!userfind){
+    throw new Apierror(400,"Unauthorizzed access");
+
+  }
+return res.status(200)
+.json(new apiresponse(200,{},"account updated successfully "));
+}
+);
+
+
+con
+
+
+export {registerUser,loginuser,logoutuser,refreshaccesstoken,changecurrectuserpassword,getcurrectuser,updateaccout};
