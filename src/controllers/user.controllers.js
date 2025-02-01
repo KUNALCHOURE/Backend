@@ -253,7 +253,7 @@ const changecurrectuserpassword=(asynchandler(async(req,res)=>{
       throw new Apierror(400,"The oldpassword is not coorect please enter the correct password ")
     }
 //saving the new password in the database 
-     await userfind.password=newpassword;
+     await userfind.password==newpassword;
      // we dont want other validations to run so we are writting validatebeforesave:false;
 
       await userfind.save({validateBeforeSave:false});
@@ -261,7 +261,7 @@ const changecurrectuserpassword=(asynchandler(async(req,res)=>{
   return res
   .status(200)
   .json(
-    new apiresponse(200,{}
+    new Apiresponse(200,{}
       ,"Password changes successfully"
     )
   )
@@ -269,14 +269,14 @@ const changecurrectuserpassword=(asynchandler(async(req,res)=>{
 }))
 
 
-cosnt getcurrectuser=asynchandler(async(req,res)=>{
+const getcurrectuser=asynchandler(async(req,res)=>{
+let userobject=req.user;
 
-
-  return res.status(200,
-    {
-      req.user
-    }
-    ,"The user is succesfully found "
+  return res.status(200)
+  .json(
+    new Apiresponse(200,
+    { userobject}
+    ,"The user is succesfully found ")
 
   )
 
@@ -296,7 +296,7 @@ const updateaccout=asynchandler(async(req,res)=>{
 
  const userfind=user.findByIdAndUpdate(req.user?._id,{
   $set:{
-    username:username
+    username:username,
     fullname:fullname,
     email:email,
   }
@@ -332,7 +332,7 @@ const updateavatar=asynchandler(async(req,res)=>{
     $set:{
       avatar:res.url
     }
-  }{new:true}).select("-password");
+  },{new:true}).select("-password");
 
   return res.status(200)
   .json(new Apiresponse(200,{result}
@@ -363,7 +363,7 @@ const updatecoverimage=asynchandler(async(req,res)=>{
     $set:{
       coverimage:res.url
     }
-  }{new:true}).select("-password");
+  },{new:true}).select("-password");
 
 
   return res.status(200)
@@ -388,7 +388,7 @@ const getuserchannelprofile=asynchandler(async(req,res)=>{
   const channel= await user.aggregate([
     {
       $match:{
-        username:username?.toLowerCase();
+        username:username?.toLowerCase()
       }
     },
 
@@ -396,7 +396,7 @@ const getuserchannelprofile=asynchandler(async(req,res)=>{
       //for finding subscriber
       $lookup:{
         from:"subscription",
-        localFeild:"_id";
+        localFeild:"_id",
         foreignFeild:"channel",
         as:"Subscribers"
       }
@@ -405,7 +405,7 @@ const getuserchannelprofile=asynchandler(async(req,res)=>{
       // for finding channels 
       $lookup:{
         from:"subscription",
-        localFeild:"_id";
+        localFeild:"_id",
         foreignFeild:"subscriber",
         as:"Subscribeto"
       }
@@ -424,7 +424,7 @@ const getuserchannelprofile=asynchandler(async(req,res)=>{
         isSubscribed:{
           $condition:{
             if:{$in:[req.user?._id,$Subscribers.subscriber]},
-            then:true
+            then:true,
             else:false
           }
         }
@@ -455,6 +455,63 @@ const getuserchannelprofile=asynchandler(async(req,res)=>{
   )
 })
 
+const getwatchhistory=asynchandler(async(req,res)=>{
+   // wheneve we do this we get string not the mongoid
+               //but we are using mongoose so when  we give it to the mongoose it convert it to the mongoid
+
+   const founduser=await user.aggregate([
+   // in aggreagation the id is directly given it is not converted so we haav to explicitly convert it to the mongo id 
+    {
+      $match:{
+        _id:new mongoose.Types.ObjectId(req.user._id)
+
+      }
+    },
+    {
+      $lookup:{
+        from:"videos",
+        localFeild:"whatchHistory",
+        foreignFeild:"-id",
+        as:"watchhistory",
+        pipeline:[
+            {
+              $lookup:{
+                  from:"users",
+                  localFeild:"owner",
+                  foreignFeild:"_id",
+                  as:"owner",
+
+                  pipeline:[
+                    {
+                      $project:{
+                        fullname:1,
+                        username:1,
+                        avatar:1
+                      }
+                    },
+                    {
+                       $addFeilds:{
+                        owner:{
+                          $first:"Owner"
+                        }
+                       }
+                    }
+                  ]
+              }
+            }
+        ]
+      }
+    }
+   ])
+
+   return res.status(200)
+   .json(
+    new Apiresponse(200,
+      founduser[0].watchHisotry,
+      "Watch history fetched  successfully "
+    )
+   )
+})
 
 export {registerUser
   ,loginuser,
@@ -464,6 +521,8 @@ export {registerUser
   ,getcurrectuser,
   updateaccout,
   updateavatar,
-  updatecoverimage
+  updatecoverimage,
+  getuserchannelprofile,
+  getwatchhistory
 
 };
