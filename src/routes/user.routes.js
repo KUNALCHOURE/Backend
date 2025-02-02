@@ -48,4 +48,5 @@ router.route("/update-coverimage").patch(verifyJWT,upload.single("coverimage"),u
 //here we are taking username from param so we have to write the url carefully 
 router.route("/channel/:username").get(verifyJWT,getuserchannelprofile);
 router.route("/history").get(verifyJWT,getwatchhistory);
+
 export default router;

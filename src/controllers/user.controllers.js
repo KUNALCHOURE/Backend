@@ -463,7 +463,7 @@ const getuserchannelprofile=asynchandler(async(req,res)=>{
 
 const getwatchhistory=asynchandler(async(req,res)=>{
    // wheneve we do this we get string not the mongoid
-               //but we are using mongoose so when  we give it to the mongoose it convert it to the mongoid
+     //but we are using mongoose so when  we give it to the mongoose it convert it to the mongoid
 
    const founduser=await user.aggregate([
    // in aggreagation the id is directly given it is not converted so we haav to explicitly convert it to the mongo id 
