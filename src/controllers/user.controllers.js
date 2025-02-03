@@ -273,7 +273,7 @@ const changecurrectuserpassword=(asynchandler(async(req,res)=>{
 const getcurrectuser=asynchandler(async(req,res)=>{
 let userobject=req.user;
     // select method dont work on js object 
-                                        // they only work on mongoose query
+    // they only work on mongoose query
   return res.status(200)
   .json(
     new Apiresponse(200,
@@ -467,6 +467,7 @@ const getwatchhistory=asynchandler(async(req,res)=>{
 
    const founduser=await user.aggregate([
    // in aggreagation the id is directly given it is not converted so we haav to explicitly convert it to the mongo id 
+   // we can do it by new mongoose.Types.ObjectId(*here enter the prev id*);
     {
       $match:{
         _id:new mongoose.Types.ObjectId(req.user._id)
