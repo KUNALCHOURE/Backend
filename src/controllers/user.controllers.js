@@ -57,7 +57,9 @@ const registerUser=asynchandler(async(req,res)=>{
     }
 
     // mmulter provide acces of the files using multers 
-    const avatarlocalpath = req.files?.avatar?.[0]?.path;
+    const avatarlocalpath = req.files?.avatar?.[0]?.path; 
+    // but if we are uploading using upload.single then we donot need to add name like avatar[0] we can direclty 
+    //acces with req.file.path
     const coverimagelocalpath = req.files?.coverimage?.[0]?.path || "";
 
     if (!avatarlocalpath) {
