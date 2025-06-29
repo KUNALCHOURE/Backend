@@ -146,7 +146,9 @@ const loginuser=asynchandler(async(req,res,)=>{
   const options={   //the cookies can generaly be modied from the frontend so for security 
                   // we add this httpOnly nad secure as true ,so it doesnt allow modifying cookies from the frontend 
                   // and the cookies can be only modified from the server 
-                
+                // secure is used when we are in production and 
+                  // for sending reuest using https we do this  but in the development state 
+                 // we will  set the secure false 
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
                     path: '/'  // Explicitly setting the path
